@@ -23,40 +23,31 @@ template<typename typC,typename typD> ostream &operator<<(ostream &cout,const pa
 template<typename typC,typename typD> ostream &operator<<(ostream &cout,const vector<pair<typC,typD>> &a) { for (auto &x:a) cout<<x<<'\n'; return cout; }
 template<typename typC> ostream &operator<<(ostream &cout,const vector<typC> &a) { int n=a.size(); if (!n) return cout; cout<<a[0]; for (int i=1; i<n; i++) cout<<' '<<a[i]; return cout; }
 
-// since here limit can go upto 1e9 we cant create a matrix this large 
-// reversing the question , we will fix a value of V and call the function (i,V) which return min limit
-// since vi<=1000 and N = 100 max value of sum of V can go upto 1e5 
-int dp[(int)1e5+1][101];
-int helper(vector<int>& v, vector<int>& w,int i,int values){
-    if(i==v.size()){
-        if(values==0)return 0;
-        else return INT_MAX;
-    }
-    if(values==0)return 0;
-    int& ans=dp[values][i];
-    if(ans!=-1)return ans;
+int longestPath(vector<vector<int>>& edges,int node,vector<int>& vis){
+    if(vis[node]!=-1)return vis[node];
 
-    int take=INT_MAX,notTake=INT_MAX;
-    if(v[i]<=values)take=helper(v,w,i+1,values-v[i])+w[i];
-    notTake=helper(v,w,i+1,values);
-    return ans=min(take,notTake);
-}
-
-void solve(){
-    int n,limit;
-    cin>>n>>limit;
-    vi w(n),v(n);
-    for(int i=0;i<n;i++)cin>>w[i]>>v[i];
-    memset(dp, -1, sizeof(dp));
-    int low=1,high=(int)1e5;
     int ans=0;
-    // checking all the values from high to low , BS dont work here 
-    while(high){
-        if(helper(v,w,0,high)<=limit){
-            ans=high;
-            break;
+    for(auto& it:edges[node]){
+        ans=max(ans,longestPath(edges,it,vis)+1);
+    }
+    return vis[node]=ans;
+
+}
+void solve(){
+    int n,m;
+    cin>>n>>m;
+    vector<vector<int>>edges(n+1);
+    for(int i=0;i<m;i++){
+        int x,y;
+        cin>>x>>y;
+        edges[x].push_back(y);
+    }
+    vector<int>vis(n+1,-1);
+    int ans=0;
+    for(int i=1;i<=n;i++){
+        if(vis[i]==-1){
+            ans=max(ans,longestPath(edges,i,vis));
         }
-        high--;
     }
     cout<<ans<<"\n";
 }

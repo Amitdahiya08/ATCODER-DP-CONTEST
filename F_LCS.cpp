@@ -23,41 +23,42 @@ template<typename typC,typename typD> ostream &operator<<(ostream &cout,const pa
 template<typename typC,typename typD> ostream &operator<<(ostream &cout,const vector<pair<typC,typD>> &a) { for (auto &x:a) cout<<x<<'\n'; return cout; }
 template<typename typC> ostream &operator<<(ostream &cout,const vector<typC> &a) { int n=a.size(); if (!n) return cout; cout<<a[0]; for (int i=1; i<n; i++) cout<<' '<<a[i]; return cout; }
 
-// since here limit can go upto 1e9 we cant create a matrix this large 
-// reversing the question , we will fix a value of V and call the function (i,V) which return min limit
-// since vi<=1000 and N = 100 max value of sum of V can go upto 1e5 
-int dp[(int)1e5+1][101];
-int helper(vector<int>& v, vector<int>& w,int i,int values){
-    if(i==v.size()){
-        if(values==0)return 0;
-        else return INT_MAX;
-    }
-    if(values==0)return 0;
-    int& ans=dp[values][i];
-    if(ans!=-1)return ans;
+int LCS(string&s ,string& t,int i,int j,vector<vector<int>>& dp){
+    if(i==0 ||j==0)return 0;
+    if(dp[i][j]!=-1)return dp[i][j];
 
-    int take=INT_MAX,notTake=INT_MAX;
-    if(v[i]<=values)take=helper(v,w,i+1,values-v[i])+w[i];
-    notTake=helper(v,w,i+1,values);
-    return ans=min(take,notTake);
+    int take=0,notTake=0;
+    if(s[i-1]==t[j-1])take=LCS(s,t,i-1,j-1,dp)+1;
+    notTake=max(LCS(s,t,i-1,j,dp),LCS(s,t,i,j-1,dp));
+    return dp[i][j]=max(take,notTake);
 }
-
 void solve(){
-    int n,limit;
-    cin>>n>>limit;
-    vi w(n),v(n);
-    for(int i=0;i<n;i++)cin>>w[i]>>v[i];
-    memset(dp, -1, sizeof(dp));
-    int low=1,high=(int)1e5;
-    int ans=0;
-    // checking all the values from high to low , BS dont work here 
-    while(high){
-        if(helper(v,w,0,high)<=limit){
-            ans=high;
-            break;
+    string s,t;
+    cin>>s;
+    cin>>t;
+    // first fill the dp for length of LCS 
+    int n=s.size(),m=t.size();
+    vector<vector<int>>dp(n+1,vector<int>(m+1,-1));
+    LCS(s,t,n,m,dp);
+    // now we have our dp array filled 
+    string ans="";
+    int i=n,j=m;
+    // now our LCS value is stored at dp[m][n]
+    // so moving backwards from m,n to 0,0 using stored values of dp
+    while(i>0 && j>0){
+        // if they are equal we know that next value will be at i-1,j-1 
+        if(s[i-1]==t[j-1]){
+            ans+=s[i-1];
+            i--,j--;
         }
-        high--;
+        // if not check which one to reduce i or j ( use dp stored values for that)
+        else {
+            if(dp[i-1][j]>dp[i][j-1])i--;
+            else j--;
+        }
     }
+    // ans is stored in reverse order so straight it 
+    reverse(ans.begin(),ans.end());
     cout<<ans<<"\n";
 }
 
@@ -66,7 +67,7 @@ signed main()
 
     ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
     int t = 1;
-    // cin >> t;
+    // cin >> t;   
 
     while(t--)
      solve();
